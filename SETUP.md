@@ -32,4 +32,4 @@ Launch a test campaign, press Pay now, pay 0.1 SOL. Within a few minutes the win
 should say "Payment received" and the campaign appears on the Market tab.
 If creating the link fails, open Netlify → Logs → Functions → create-invoice to see the error.
 If NOWPayments rejects "sol" as the price currency, set LISTING_PRICE_CURRENCY=usd
-and LISTING_PRICE_AMOUNT to the dollar price.
+and LISTING_PRICE_AMOUNT to the dollar price..
