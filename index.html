@@ -757,7 +757,7 @@ function openPayment(draft, onPaid){
           if(stopped) return;
           body.innerHTML=`<div class="status warn">${err instanceof TypeError || err.noServer
             ? "Payments only work on the live site. This preview can't reach the payment server."
-            : "Couldn't create a payment link right now. Close this window and try again in a minute."}</div>`;
+            : "Couldn't create a payment link. " + esc(err.message)}</div>`;
           return;
         }
       }
