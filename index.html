@@ -262,15 +262,13 @@ footer .wrap{padding-block:20px;display:flex;gap:14px;flex-wrap:wrap;align-items
 </style>
 
 </head><body>
-<div class="demo"><div class="wrap"><strong>Prototype.</strong> Escrow and X verification are simulated. Your changes are saved in this browser only.</div></div>
+<div class="demo"><div class="wrap"><strong>Prototype.</strong> Listings are currently saved in each visitor's browser only.</div></div>
 
 <header class="top">
   <div class="wrap top-row">
     <a class="logo" href="#market">SHILL<b>PAID</b><small>on Solana</small></a>
     <nav class="tabs" aria-label="Main">
       <a href="#market" data-tab="market">Market</a>
-      <a href="#promoters" data-tab="promoters">Promoters</a>
-      <a href="#dashboard" data-tab="dashboard">Dashboard</a>
     </nav>
   </div>
 </header>
@@ -281,17 +279,17 @@ footer .wrap{padding-block:20px;display:flex;gap:14px;flex-wrap:wrap;align-items
   <section data-view="market">
     <div class="hero">
       <div>
-        <h1>Coin promotion, <em>priced and settled</em> in one place.</h1>
-        <p>Creators list their coin. X accounts apply with what they'll post and their price, and get paid when each post is verified. Promoters who believe in the coin can take their pay as a share of its trading fees instead.</p>
+        <h1>Get your coin <em>seen</em> for just 0.1&nbsp;SOL.</h1>
+        <p>List your Solana coin on the SHILLPAID market in under a minute. Add your contract address, logo, banner, X and website, pay a one-time 0.1 SOL listing fee, and your coin goes live for everyone browsing.</p>
       </div>
       <dl class="hero-stats" id="heroStats"></dl>
     </div>
 
     <ol class="how">
-      <li><h3>Creator lists the coin</h3><p>Coin name, ticker and mint address. The campaign goes live on the market straight away.</p></li>
-      <li><h3>Promoters apply</h3><p>Name a deliverable and a price, and pick a payout: SOL upfront, a 50/50 split, or all fee-share.</p></li>
-      <li><h3>Post and verify</h3><p>Every paid post must carry #ad or "paid promotion". The creator checks the link before release.</p></li>
-      <li><h3>Get paid</h3><p>Accepting an offer funds escrow plus 5% commission. SOL releases per verified post; fee-share stakes collect creator fees for 30 days.</p></li>
+      <li><h3>Add your coin</h3><p>Enter the name, ticker and contract address. A banner, logo, X link and website are optional.</p></li>
+      <li><h3>Pay 0.1 SOL</h3><p>One flat listing fee through a secure checkout link. No subscriptions, no hidden fees.</p></li>
+      <li><h3>Go live</h3><p>Your coin appears on the market as soon as your payment is confirmed.</p></li>
+      <li><h3>Get seen</h3><p>Visitors can copy your contract address in one click and go straight to your X and website.</p></li>
     </ol>
 
     <div class="toolbar">
@@ -350,7 +348,7 @@ footer .wrap{padding-block:20px;display:flex;gap:14px;flex-wrap:wrap;align-items
   </section>
 </main>
 
-<footer><div class="wrap"><span>SHILLPAID takes 5% commission on completed deliverables. Paid posts must be disclosed. Nothing here is investment advice.</span><button class="btn small ghost" type="button" id="resetBtn">Clear all data</button></div></footer>
+<footer><div class="wrap"><span>SHILLPAID lists Solana coins for a one-time 0.1 SOL fee. Nothing here is investment advice. Always do your own research.</span><button class="btn small ghost" type="button" id="resetBtn">Clear all data</button></div></footer>
 
 <div id="modalRoot"></div>
 <div id="toastRoot"></div>
@@ -478,26 +476,19 @@ let sort="new";
 function renderHero(){
   const esc_=S.campaigns.reduce((a,c)=>a+money(c).remaining,0);
   document.getElementById("heroStats").innerHTML=`
-    <div><dt>In escrow</dt><dd class="num">${fmt(esc_,1)} <small>SOL</small></dd></div>
-    <div><dt>Live</dt><dd class="num">${S.campaigns.length} <small>campaigns</small></dd></div>
-    <div><dt>Promoters</dt><dd class="num">${S.promoters.length}</dd></div>`;
+    <div><dt>Listed</dt><dd class="num">${S.campaigns.length} <small>coins</small></dd></div>
+    <div><dt>Listing fee</dt><dd class="num">0.1 <small>SOL</small></dd></div>
+    <div><dt>Other fees</dt><dd class="num">0</dd></div>`;
 }
 function ticketHTML(c){
-  const b=budgetOf(c), paid=c.jobs.filter(j=>j.status==="paid").length;
   return `<article class="ticket" tabindex="0" data-open="${c.id}" aria-label="${esc(c.name)} campaign">
     ${c.banner?`<div class="tk-banner"><img src="${c.banner}" alt=""></div>`:""}
     <div class="tk-body">
-      <div class="tk-head"><span class="ticker">$${esc(c.ticker)}</span>${c.fee.on?`<span class="pill fee">Fee-share ${c.fee.pool}% · ${c.fee.days}d</span>`:`<span class="pill sol">SOL only</span>`}</div>
+      <div class="tk-head"><span class="ticker">$${esc(c.ticker)}</span></div>
       <div class="coin-row">${logoHTML(c)}<h3>${esc(c.name)}${c.owner==="you"?' <span class="pill muted" style="vertical-align:middle">Yours</span>':""}</h3></div>
-      <div class="mint mono">Mint ${esc(shortMint(c.mint))}</div>
+      <div class="copyrow"><code>${esc(c.mint)}</code><button class="btn small" type="button" data-copy="${esc(c.mint)}" aria-label="Copy contract address">Copy</button></div>
       ${linksHTML(c)}
     </div>
-    <div class="perf" aria-hidden="true"></div>
-    <dl class="tk-foot">
-      <div><dt>Committed</dt><dd class="num">${fmt(b,1)} SOL</dd></div>
-      <div><dt>Applicants</dt><dd class="num">${c.apps.length}</dd></div>
-      <div><dt>Completed</dt><dd class="num">${paid}</dd></div>
-    </dl>
   </article>`;
 }
 function renderMarket(){
@@ -508,8 +499,8 @@ function renderMarket(){
   document.getElementById("campaignGrid").innerHTML = list.map(ticketHTML).join("") || (S.campaigns.length?`<p class="empty">No campaigns match this filter.</p>`:`<p class="empty">No campaigns yet. <a href="#launch">Launch the first one</a>.</p>`);
 }
 document.getElementById("sortSel").onchange=e=>{sort=e.target.value;renderMarket();};
-document.getElementById("campaignGrid").addEventListener("click",e=>{ if(e.target.closest("a")) return; const t=e.target.closest("[data-open]"); t&&openCampaign(t.dataset.open);});
-document.getElementById("campaignGrid").addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.target.closest("a")){const t=e.target.closest("[data-open]"); t&&openCampaign(t.dataset.open);} });
+document.getElementById("campaignGrid").addEventListener("click",e=>{ if(e.target.closest("a")) return; const cp=e.target.closest("[data-copy]"); if(cp){ copyText(cp.dataset.copy,cp); return; } const t=e.target.closest("[data-open]"); t&&openCampaign(t.dataset.open);});
+document.getElementById("campaignGrid").addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.target.closest("a,button")){const t=e.target.closest("[data-open]"); t&&openCampaign(t.dataset.open);} });
 
 /* ---------- fee estimator ---------- */
 function estimate(c, swappedSol, vol, feeRate, solPrice){
@@ -521,103 +512,23 @@ function estimate(c, swappedSol, vol, feeRate, solPrice){
 
 function openCampaign(id){
   const c=S.campaigns.find(x=>x.id===id); if(!c) return;
-  const m=money(c);
-  const opts=Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
   openModal(`
     ${c.banner?`<div class="m-banner"><img src="${c.banner}" alt=""></div>`:""}
     <div class="modal-head">
-      <div style="display:grid;gap:6px">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="ticker">$${esc(c.ticker)}</span>${c.fee.on?`<span class="pill fee">Fee-share available</span>`:`<span class="pill sol">SOL only</span>`}</div>
+      <div style="display:grid;gap:6px;min-width:0">
+        <span class="ticker" style="justify-self:start">$${esc(c.ticker)}</span>
         <div class="coin-row">${logoHTML(c,"lg")}<h2>${esc(c.name)}</h2></div>
-        <span class="mint mono" style="word-break:break-all">${esc(c.mint)}</span>
-        ${linksHTML(c)}
       </div>
       <button class="btn small x" type="button" data-close>Close</button>
     </div>
     <div class="modal-body">
-      <div class="two">
-        <div class="box">
-          <h3>Terms</h3>
-          <dl class="kv">
-            <dt>Committed in escrow</dt><dd class="num">${fmt(m.budget,2)} SOL</dd>
-            <dt>Promotions completed</dt><dd class="num">${c.jobs.filter(j=>j.status==="paid").length}</dd>
-            <dt>Fee-share stakes</dt><dd class="num">${fmt(feeValueOf(c),2)} SOL value</dd>
-            <dt>Fee pool</dt><dd>${c.fee.pool}% of creator fees</dd><dt>Pool duration</dt><dd>${c.fee.days} days</dd>
-            ${c.listing?`<dt>Listing fee</dt><dd>${c.listing.sol} SOL paid</dd>`:""}
-            <dt>Disclosure</dt><dd>#ad required</dd>
-          </dl>
-        </div>
-        ${c.fee.on?`<div class="box" id="estBox">
-          <h3>Fee-share estimator</h3>
-          <div class="row3">
-            <label class="f">Daily volume (USD)<input type="number" id="e-vol" value="${c.vol24||50000}" min="0" step="10000"></label>
-            <label class="f">Creator fee rate %<input type="number" id="e-rate" value="0.05" min="0" step="0.01"></label>
-            <label class="f">SOL price (USD)<input type="number" id="e-sol" value="150" min="1"></label>
-            <label class="f">Value you swap (SOL)<input type="number" id="e-swap" value="1" min="0" step="0.5"></label>
-          </div>
-          <div class="estimate num" id="e-out"></div>
-          <p class="note">Pool share assumes nobody else takes fee-share after you; more stakes dilute it. Assumes volume holds flat for the whole pool period. Volume usually decays, so treat this as a ceiling. Rates vary by launchpad; edit to match yours.</p>
-        </div>`:`<div class="box"><h3>SOL only</h3><p class="note" style="font-size:14px">This creator pays every deliverable in SOL from escrow. Payment releases as soon as the creator verifies your post link.</p></div>`}
+      <div style="display:grid;gap:6px">
+        <span class="note">Contract address</span>
+        <div class="copyrow"><code>${esc(c.mint)}</code><button class="btn small" type="button" data-copy="${esc(c.mint)}">Copy</button></div>
       </div>
-
-      <form class="box" id="applyForm" novalidate style="background:var(--surface)">
-        <h3>Apply to promote</h3>
-        <div class="row3">
-          <label class="f">Your X handle<input type="text" id="ap-handle" placeholder="@yourhandle" autocomplete="off"></label>
-          <label class="f">Followers<input type="number" id="ap-f" placeholder="10000" min="0"></label>
-          <label class="f">Deliverable<select id="ap-type">${opts}</select></label>
-          <label class="f">How many<input type="number" id="ap-qty" value="1" min="1"></label>
-          <label class="f">Your price per item (SOL)<input type="number" id="ap-price" value="1" min="0.1" step="0.1"></label>
-        </div>
-        <div class="radio-cards" role="radiogroup" aria-label="Payout">
-          <label><input type="radio" name="ap-pay" value="sol" checked><b>SOL upfront</b><span class="note">Full price from escrow on verification</span></label>
-          <label ${c.fee.on?"":'style="opacity:.45"'}><input type="radio" name="ap-pay" value="split" ${c.fee.on?"":"disabled"}><b>50/50 split</b><span class="note">Half SOL, half into the fee pool</span></label>
-          <label ${c.fee.on?"":'style="opacity:.45"'}><input type="radio" name="ap-pay" value="fees" ${c.fee.on?"":"disabled"}><b>All fee-share</b><span class="note">Full value becomes a fee stake</span></label>
-        </div>
-        <label class="f">Pitch<textarea id="ap-pitch" placeholder="What you'll post and why your audience fits this coin."></textarea></label>
-        <p class="err" id="ap-err" hidden></p>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn primary" type="submit">Send application</button><span class="note" id="ap-total"></span></div>
-      </form>
-
-      ${c.jobs.length?`<div style="display:grid;gap:10px"><h3 style="font-size:16px">Completed and active promotions</h3><div class="tscroll"><table><thead><tr><th>Promoter</th><th>Deliverable</th><th>Payout</th><th>Status</th><th class="r">Impressions</th></tr></thead><tbody>
-      ${c.jobs.map(j=>`<tr><td><button class="linkish" type="button" data-prof="${esc(j.handle)}">@${esc(j.handle)}</button></td><td>${esc(TYPES[j.type])}</td><td>${payoutPill(j.payout)}</td><td>${statusPill(j.status)}</td><td class="r num">${j.impr?kfmt(j.impr):"–"}</td></tr>`).join("")}
-      </tbody></table></div></div>`:""}
+      ${linksHTML(c)}
     </div>`, root=>{
-      const upd=()=>{
-        const q=Math.max(1,+root.querySelector("#ap-qty").value||1), t=root.querySelector("#ap-type").value, p=root.querySelector("[name=ap-pay]:checked").value;
-        const pr=Math.max(0,+root.querySelector("#ap-price").value||0), v=q*pr;
-        root.querySelector("#ap-total").textContent=`Package value ${fmt(v)} SOL · ${p==="sol"?fmt(v)+" SOL on verification":p==="split"?fmt(v/2)+" SOL + "+fmt(v/2)+" SOL of fee stake":fmt(v)+" SOL of fee stake"}`;
-        if(c.fee.on){
-          const sw=p==="sol"?0:p==="split"?v/2:v;
-          if(document.activeElement!==root.querySelector("#e-swap") && sw>0) root.querySelector("#e-swap").value=fmt(sw,2);
-          est();
-        }
-      };
-      const est=()=>{
-        if(!c.fee.on) return;
-        const r=estimate(c,+root.querySelector("#e-swap").value||0,+root.querySelector("#e-vol").value||0,+root.querySelector("#e-rate").value||0,+root.querySelector("#e-sol").value||1);
-        const sw=+root.querySelector("#e-swap").value||0;
-        const mult=sw? r.sol/sw : 0;
-        root.querySelector("#e-out").innerHTML=`≈ ${fmt(r.sol,2)} SOL <small>over ${c.fee.days} days · ${fmt(r.stake*100,1)}% of the pool · ${mult?fmt(mult,2)+"× the SOL you swap":"enter an amount"}</small>`;
-      };
-      root.querySelectorAll("#estBox input").forEach(i=>i.addEventListener("input",est));
-      root.querySelectorAll("#applyForm input,#applyForm select").forEach(i=>i.addEventListener("input",upd));
-      upd();
-      root.addEventListener("click",e=>{const b=e.target.closest("[data-prof]"); if(b){ openProfile(b.dataset.prof); }});
-      root.querySelector("#applyForm").addEventListener("submit",e=>{
-        e.preventDefault();
-        const err=root.querySelector("#ap-err");
-        const handle=root.querySelector("#ap-handle").value.trim().replace(/^@/,"");
-        const f=+root.querySelector("#ap-f").value||0;
-        const pitch=root.querySelector("#ap-pitch").value.trim();
-        const show=m=>{err.textContent=m;err.hidden=false;};
-        if(!/^[A-Za-z0-9_]{1,15}$/.test(handle)) return show("Enter your X handle: letters, numbers and underscores, up to 15 characters.");
-        if(!(+root.querySelector("#ap-price").value>0)) return show("Set your price per item in SOL.");
-        if(pitch.length<20) return show("Add a pitch of at least 20 characters so the creator knows what you'll post.");
-        c.apps.push({id:uid(),handle,type:root.querySelector("#ap-type").value,qty:Math.max(1,+root.querySelector("#ap-qty").value||1),price:+root.querySelector("#ap-price").value,payout:root.querySelector("[name=ap-pay]:checked").value,pitch,status:"pending",followers:f});
-        if(!prom(handle)) S.promoters.push({handle,name:handle,followers:f,niche:"New on SHILLPAID",completed:0,ontime:100,avgImpr:0,pref:root.querySelector("[name=ap-pay]:checked").value,history:[]});
-        save(); closeModal(); renderAll(); toast(`Application sent to $${c.ticker}`);
-      });
+      root.addEventListener("click",e=>{ const b=e.target.closest("[data-copy]"); if(b) copyText(b.dataset.copy,b); });
     });
 }
 const statusPill = s => s==="paid"?`<span class="pill good">Paid</span>`: s==="submitted"?`<span class="pill warn">Needs review</span>`: s==="declined"?`<span class="pill muted">Declined</span>`: s==="pending"?`<span class="pill warn">Pending</span>`:`<span class="pill muted">Awaiting post</span>`;
@@ -934,7 +845,7 @@ document.getElementById("openLaunch").onclick=()=>setLaunch(true);
 document.getElementById("closeLaunch").onclick=()=>setLaunch(false);
 
 /* ---------- routing ---------- */
-const VIEWS=["market","promoters","dashboard"];
+const VIEWS=["market"];
 const route=()=>{ const h=location.hash.slice(1); return VIEWS.includes(h)?h:"market"; };
 function show(){
   const r=route();
