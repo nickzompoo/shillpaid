@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>SHILLPAID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#ECEEF3; --surface:#FFFFFF; --surface-2:#F5F6FA; --ink:#141829; --ink-2:#4A5068; --muted:#737A92; --line:#D9DCE6;
+  --accent:#E0441A; --accent-ink:#FFFFFF; --accent-soft:#FCE6DE;
+  --fee:#5B3FE0; --fee-soft:#E9E4FD;
+  --good:#12805A; --good-soft:#DDF3EA; --warn:#9A6414; --warn-soft:#FBF0DA; --bad:#C0392B;
+  --shadow:0 1px 2px rgba(20,24,41,.06),0 6px 20px -12px rgba(20,24,41,.25);
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0D0F19; --surface:#161A28; --surface-2:#1C2132; --ink:#E9EBF3; --ink-2:#B3B8CB; --muted:#8A91A8; --line:#2A3044;
+    --accent:#FF6A3D; --accent-ink:#1A0A04; --accent-soft:#3A1C12; --fee:#A493FF; --fee-soft:#241D46;
+    --good:#3CCB8D; --good-soft:#123326; --warn:#E6A94A; --warn-soft:#352812; --bad:#FF7A6B;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0D0F19; --surface:#161A28; --surface-2:#1C2132; --ink:#E9EBF3; --ink-2:#B3B8CB; --muted:#8A91A8; --line:#2A3044;
+  --accent:#FF6A3D; --accent-ink:#1A0A04; --accent-soft:#3A1C12; --fee:#A493FF; --fee-soft:#241D46;
+  --good:#3CCB8D; --good-soft:#123326; --warn:#E6A94A; --warn-soft:#352812; --bad:#FF7A6B;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -14px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+#launchWrap,#campaignGrid{scroll-margin-top:calc(90px + env(safe-area-inset-top,0px))}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px}
+.mono{font-family:var(--mono);font-size:.86em}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-row{display:flex;align-items:center;gap:18px;padding-block:12px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em;display:flex;align-items:baseline;gap:2px;text-decoration:none}
+.logo b{color:var(--accent)}
+.logo small{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted);margin-left:6px;letter-spacing:.08em;text-transform:uppercase}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+nav.tabs a{text-decoration:none;padding:7px 12px;border-radius:8px;font-weight:600;font-size:14px;color:var(--ink-2)}
+nav.tabs a:hover{background:var(--surface)}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--ink-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.fee{background:var(--fee);color:#fff;border-color:var(--fee)}
+.btn.small{padding:5px 10px;font-size:13px;border-radius:7px}
+.btn.ghost{background:transparent}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.wallet{font-family:var(--mono);font-size:13px}
+
+/* demo banner */
+.demo{font-size:13px;color:var(--ink-2);background:var(--surface-2);border-bottom:1px solid var(--line)}
+.demo .wrap{padding-block:7px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.demo strong{color:var(--ink)}
+
+/* tape */
+.tape{overflow:hidden;border-bottom:1px solid var(--line);background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:12.5px}
+.tape-inner{display:flex;gap:40px;white-space:nowrap;padding-block:8px;width:max-content;animation:tape 60s linear infinite}
+.tape span b{color:var(--accent)}
+.tape span i{font-style:normal;color:var(--fee)}
+@keyframes tape{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tape-inner{animation:none}}
+
+main{padding-block:28px 64px}
+section[data-view]{display:grid;gap:28px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.35fr 1fr;gap:28px;align-items:end}
+.hero h1{font-size:clamp(34px,5.4vw,60px);line-height:.98;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--ink-2);max-width:56ch;margin:14px 0 0;font-size:16.5px}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hero-stats div{background:var(--surface);padding:14px 16px}
+.hero-stats dt{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.hero-stats dd{margin:4px 0 0;font-family:var(--display);font-size:26px;font-weight:700}
+.hero-stats dd small{font-size:13px;color:var(--muted);font-family:var(--body);font-weight:500}
+
+/* how */
+.how{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:step}
+.how li{list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;counter-increment:step}
+.how li::before{content:counter(step);font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);display:block;margin-bottom:6px}
+.how h3{font-size:16px;margin-bottom:4px}
+.how p{margin:0;color:var(--ink-2);font-size:13.5px}
+.how{padding:0;margin:0}
+
+/* toolbar */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toolbar h2{font-size:24px;margin-right:auto}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:5px 11px;border-radius:7px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+select,input[type=text],input[type=number],input[type=date],input[type=url],textarea{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:14px;width:100%}
+textarea{resize:vertical;min-height:80px}
+label.f{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
+label.f .hint{font-weight:400;color:var(--muted);font-size:12px}
+
+/* tickets */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.ticket{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative;cursor:pointer;transition:transform .15s}
+.ticket:hover{transform:translateY(-2px)}
+.tk-body{padding:16px 18px 14px;display:grid;gap:10px}
+.tk-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ticker{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--ink);color:var(--bg);padding:3px 8px;border-radius:6px}
+.ticket h3{font-size:21px;font-weight:700}
+.tk-banner{aspect-ratio:3/1;border-radius:14px 14px 0 0;overflow:hidden;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.tk-banner img,.m-banner img{width:100%;height:100%;object-fit:cover;display:block}
+.m-banner{aspect-ratio:3/1;max-height:220px;width:100%;border-radius:16px 16px 0 0;overflow:hidden;background:var(--surface-2)}
+.coin-row{display:flex;align-items:center;gap:10px;min-width:0}
+.coin-img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--line);background:var(--surface-2)}
+.coin-img.lg{width:56px;height:56px}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{font-size:12.5px;font-weight:600;text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:3px 9px;background:var(--surface)}
+.links a:hover{border-color:var(--ink-2)}
+.upload{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.upload .pv{border:1px dashed var(--line);background:var(--surface-2);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:12px;flex:none}
+.upload .pv img{width:100%;height:100%;object-fit:cover}
+.upload .pv.banner{width:240px;max-width:100%;aspect-ratio:3/1;border-radius:9px}
+.upload .pv.logo{width:64px;height:64px;border-radius:50%}
+.upload input[type=file]{font-size:13px;max-width:100%}
+.pay{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+.qr{background:#fff;border-radius:12px;padding:10px;border:1px solid var(--line);width:252px;max-width:100%}
+.qr svg{display:block;width:100%;height:auto}
+.pay-amt{font-family:var(--display);font-size:34px;font-weight:700;line-height:1}
+.pay-amt small{font-size:15px;color:var(--muted);font-family:var(--body);font-weight:500}
+.status{display:flex;gap:10px;align-items:center;font-weight:600;font-size:14px;padding:10px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.status.ok{background:var(--good-soft);color:var(--good);border-color:transparent}
+.status.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--ink);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+.copyrow{display:flex;gap:6px;align-items:center;min-width:0}
+.copyrow code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:5px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+@media (max-width:620px){.pay{grid-template-columns:1fr}.qr{margin:0 auto}}
+.blurb{margin:0;color:var(--ink-2);font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mint{color:var(--muted);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;border:1px solid var(--line);background:var(--surface-2);padding:3px 8px;border-radius:999px;white-space:nowrap}
+.pill{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.pill.fee{background:var(--fee-soft);color:var(--fee)}
+.pill.sol{background:var(--accent-soft);color:var(--accent)}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.muted{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.perf{position:relative;height:0;border-top:2px dashed var(--line);margin-inline:14px}
+.perf::before,.perf::after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.perf::before{left:-24px;clip-path:inset(0 0 0 50%)}
+.perf::after{right:-24px;clip-path:inset(0 50% 0 0)}
+.tk-foot{padding:12px 18px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tk-foot dt{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.tk-foot dd{margin:2px 0 0;font-weight:700;font-size:15px}
+.bar{height:6px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;grid-column:1/-1}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.barlabel{grid-column:1/-1;font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(10,12,22,.55);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:calc(24px + env(safe-area-inset-top,0px)) 16px 24px;overflow-y:auto}
+.modal{background:var(--surface);color:var(--ink);border-radius:16px;max-width:820px;width:100%;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);border:1px solid var(--line)}
+.modal-head{padding:20px 22px 14px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line)}
+.modal-head h2{font-size:26px}
+.modal-head .x{margin-left:auto}
+.modal-body{padding:18px 22px 22px;display:grid;gap:20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.box{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px;align-content:start}
+.box h3{font-size:16px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-weight:600}
+.estimate{font-family:var(--display);font-size:24px;font-weight:700}
+.estimate small{font-family:var(--body);font-size:13px;color:var(--muted);font-weight:500}
+.row3{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.radio-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.radio-cards label{border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;font-size:13px;display:grid;gap:2px;background:var(--surface)}
+.radio-cards label b{font-size:14px}
+.radio-cards input{position:absolute;opacity:0;pointer-events:none}
+.radio-cards label:has(input:checked){border-color:var(--fee);box-shadow:0 0 0 1px var(--fee) inset}
+.radio-cards label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.err{color:var(--bad);font-size:13px;font-weight:600;margin:0}
+
+/* launch */
+.launch{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:16px}
+.panel h3{font-size:18px}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:12px}
+legend{font-family:var(--display);font-weight:700;font-size:18px;margin-bottom:6px}
+.deliv-row{display:grid;grid-template-columns:1.6fr .7fr .9fr auto;gap:8px;align-items:end}
+.sticky{position:sticky;top:calc(84px + env(safe-area-inset-top,0px))}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{margin-top:4px;accent-color:var(--accent)}
+
+/* promoters */
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:12px;cursor:pointer;text-align:left}
+.pcard:hover{border-color:var(--ink-2)}
+.who{display:flex;gap:12px;align-items:center}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:17px;flex:none;color:#fff}
+.who b{display:block;font-size:16px}
+.who span{color:var(--muted);font-size:13px}
+.stats4{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats4 div{background:var(--surface-2);border-radius:9px;padding:8px 10px}
+.stats4 dt{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.stats4 dd{margin:2px 0 0;font-weight:700}
+
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi dt{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.kpi dd{margin:6px 0 0;font-family:var(--display);font-weight:700;font-size:24px}
+.kpi dd small{font-family:var(--body);font-size:12.5px;color:var(--muted);font-weight:500;display:block}
+.kpi.fee dd{color:var(--fee)}
+.dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px}
+.chart-wrap{position:relative}
+.chart-wrap svg{display:block;width:100%;height:220px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;padding:6px 9px;border-radius:7px;white-space:nowrap;transform:translate(-50%,-110%)}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.linkish{background:none;border:0;padding:0;color:var(--ink);font-weight:700;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.sechead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sechead h2{font-size:20px}
+.sechead p{margin:0;color:var(--muted);font-size:13.5px}
+.empty{padding:22px;text-align:center;color:var(--muted);font-size:14px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:80;box-shadow:var(--shadow)}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+footer .wrap{padding-block:20px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+
+@media (max-width:900px){
+  .hero,.launch,.dash-grid,.two{grid-template-columns:1fr}
+  .how{grid-template-columns:repeat(2,1fr)}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .sticky{position:static}
+}
+@media (max-width:520px){
+  .wrap{padding-inline:16px}
+  .how,.radio-cards{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:1fr 1fr 1fr}
+  .hero-stats dd{font-size:20px}
+  .deliv-row{grid-template-columns:1fr 1fr}
+  .deliv-row .dtype{grid-column:1/-1}
+  .kpi dd{font-size:20px}
+  .modal-head h2{font-size:21px}
+}
+</style>
+
+</head><body>
+<div class="demo"><div class="wrap"><strong>Prototype.</strong> Escrow and X verification are simulated. Your changes are saved in this browser only.</div></div>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="logo" href="#market">SHILL<b>PAID</b><small>on Solana</small></a>
+    <nav class="tabs" aria-label="Main">
+      <a href="#market" data-tab="market">Market</a>
+      <a href="#promoters" data-tab="promoters">Promoters</a>
+      <a href="#dashboard" data-tab="dashboard">Dashboard</a>
+    </nav>
+  </div>
+</header>
+<div class="tape" aria-label="Recently completed promotions"><div class="tape-inner" id="tape"></div></div>
+
+<main class="wrap">
+  <!-- MARKET -->
+  <section data-view="market">
+    <div class="hero">
+      <div>
+        <h1>Coin promotion, <em>priced and settled</em> in one place.</h1>
+        <p>Creators list their coin. X accounts apply with what they'll post and their price, and get paid when each post is verified. Promoters who believe in the coin can take their pay as a share of its trading fees instead.</p>
+      </div>
+      <dl class="hero-stats" id="heroStats"></dl>
+    </div>
+
+    <ol class="how">
+      <li><h3>Creator lists the coin</h3><p>Coin name, ticker and mint address. The campaign goes live on the market straight away.</p></li>
+      <li><h3>Promoters apply</h3><p>Name a deliverable and a price, and pick a payout: SOL upfront, a 50/50 split, or all fee-share.</p></li>
+      <li><h3>Post and verify</h3><p>Every paid post must carry #ad or "paid promotion". The creator checks the link before release.</p></li>
+      <li><h3>Get paid</h3><p>Accepting an offer funds escrow plus 5% commission. SOL releases per verified post; fee-share stakes collect creator fees for 30 days.</p></li>
+    </ol>
+
+    <div class="toolbar">
+      <h2>Open campaigns</h2>
+      <select id="sortSel" aria-label="Sort campaigns" style="width:auto">
+        <option value="new">Newest</option>
+        <option value="budget">Most committed</option>
+      </select>
+      <button class="btn primary" type="button" id="openLaunch">Launch a campaign</button>
+    </div>
+    <!-- LAUNCH -->
+    <div id="launchWrap" style="display:grid;gap:16px" hidden>
+    <div class="toolbar"><h2>Launch a campaign</h2><button class="btn" type="button" id="closeLaunch">Cancel</button></div>
+    <form class="panel" id="launchForm" novalidate style="max-width:640px">
+      <div class="row3">
+        <label class="f">Coin name<input type="text" id="lf-name" placeholder="Kiln" required></label>
+        <label class="f">Ticker<input type="text" id="lf-ticker" placeholder="KILN" maxlength="10" required></label>
+      </div>
+      <label class="f">Mint address<input type="text" id="lf-mint" class="mono" placeholder="e.g. 9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin" spellcheck="false"></label>
+      <div class="f" style="display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)">Banner image <span class="hint" style="font-weight:400;color:var(--muted);font-size:12px">Optional · wide image, 3:1 works best</span>
+        <div class="upload"><div class="pv banner" id="pv-banner">No banner</div><input type="file" id="lf-banner" accept="image/*" aria-label="Banner image"></div></div>
+      <div class="f" style="display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)">Coin image <span class="hint" style="font-weight:400;color:var(--muted);font-size:12px">Optional · square logo</span>
+        <div class="upload"><div class="pv logo" id="pv-logo">Logo</div><input type="file" id="lf-logo" accept="image/*" aria-label="Coin image"></div></div>
+      <div class="row3">
+        <label class="f">X link <span class="hint">Optional</span><input type="url" id="lf-x" placeholder="https://x.com/yourcoin"></label>
+        <label class="f">Website <span class="hint">Optional</span><input type="url" id="lf-web" placeholder="https://yourcoin.xyz"></label>
+      </div>
+      <p class="err" id="launchErr" hidden></p>
+      <div><button class="btn primary" type="submit">Publish campaign · 0.1 SOL</button></div>
+    </form>
+    </div>
+
+    <div class="grid" id="campaignGrid"></div>
+  </section>
+
+  <!-- PROMOTERS -->
+  <section data-view="promoters" hidden>
+    <div class="toolbar">
+      <h2>Promoters</h2>
+      <select id="promSort" aria-label="Sort promoters" style="width:auto">
+        <option value="completed">Most completed</option>
+        <option value="followers">Most followers</option>
+              </select>
+    </div>
+    <div class="grid" id="promGrid"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section data-view="dashboard" hidden>
+    <div class="toolbar">
+      <h2>Creator dashboard</h2>
+      <label for="dashSel" class="note">Campaign</label>
+      <select id="dashSel" style="width:auto"></select>
+    </div>
+    <div id="dashBody" style="display:grid;gap:24px"></div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>SHILLPAID takes 5% commission on completed deliverables. Paid posts must be disclosed. Nothing here is investment advice.</span><button class="btn small ghost" type="button" id="resetBtn">Clear all data</button></div></footer>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function(){
+/* ============ PAYMENT SETTINGS ============ */
+// Payments run through NOWPayments. The real price, API key and treasury payout wallet
+// live on the server (Netlify environment variables and your NOWPayments account), not here.
+const PAY = {
+  sol: 0.1,           // amount shown to the user (the server sets the real price)
+  api: "/api",        // Netlify Functions in netlify/functions/
+  pollMs: 5000
+};
+/* ========================================== */
+const COMMISSION = 0.05;
+const TYPES = {post:"Post", thread:"Thread", quote:"Quote-post", space:"X Space co-host", pin:"Pinned post (7 days)"};
+const DAY = 86400000;
+const today = new Date(); today.setHours(12,0,0,0);
+const dayStr = d => new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+const plusDays = n => new Date(today.getTime()+n*DAY).toISOString().slice(0,10);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (n,d=2) => Number(n).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:0});
+const kfmt = n => n>=1e6? fmt(n/1e6,1)+"M" : n>=1e3? fmt(n/1e3,1)+"k" : fmt(n,0);
+const shortMint = m => m.slice(0,4)+"…"+m.slice(-4);
+const uid = () => Math.random().toString(36).slice(2,9);
+const B58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const AVC = ["#E0441A","#5B3FE0","#12805A","#B0348C","#1F6FB2","#9A6414","#2E7D78","#6D4C9F"];
+const avColor = h => AVC[[...h].reduce((a,c)=>a+c.charCodeAt(0),0)%AVC.length];
+
+/* ---------- data ---------- */
+function seed(){ return {v:3, promoters:[], campaigns:[], }; }
+
+const KEY = "shillpaid-v1";
+let S;
+try { const raw = localStorage.getItem(KEY); S = raw ? JSON.parse(raw) : null; } catch(e){ S = null; }
+if(!S || S.v!==3) S = seed();
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); return true; }catch(e){ return false; } };
+
+/* ---------- links & images ---------- */
+function cleanUrl(v, hosts){
+  v=(v||"").trim(); if(!v) return "";
+  if(!/^https?:\/\//i.test(v)) v="https://"+v;
+  let u; try{ u=new URL(v); }catch(e){ return null; }
+  if(u.protocol!=="https:" && u.protocol!=="http:") return null;
+  if(hosts && !hosts.includes(u.hostname.replace(/^www\./,"").toLowerCase())) return null;
+  return u.href;
+}
+const linksHTML = c => (c.xUrl||c.web) ? `<div class="links">${c.xUrl?`<a href="${esc(c.xUrl)}" target="_blank" rel="noopener noreferrer">X</a>`:""}${c.web?`<a href="${esc(c.web)}" target="_blank" rel="noopener noreferrer">Website</a>`:""}</div>` : "";
+const logoHTML = (c,cls="") => c.logo ? `<img class="coin-img ${cls}" src="${c.logo}" alt="">` : "";
+function readImage(file, maxW, maxH, crop){
+  return new Promise((res,rej)=>{
+    if(!file || !file.type.startsWith("image/")) return rej(new Error("type"));
+    const fr=new FileReader();
+    fr.onerror=()=>rej(fr.error);
+    fr.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error("decode"));
+      img.onload=()=>{
+        let sx=0, sy=0, sw=img.width, sh=img.height;
+        if(crop){ const target=maxW/maxH, r=sw/sh; if(r>target){ const nw=sh*target; sx=(sw-nw)/2; sw=nw; } else { const nh=sw/target; sy=(sh-nh)/2; sh=nh; } }
+        const scale=Math.min(1, maxW/sw, maxH/sh), w=Math.round(sw*scale), h=Math.round(sh*scale);
+        const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+        cv.getContext("2d").drawImage(img,sx,sy,sw,sh,0,0,w,h);
+        res(cv.toDataURL("image/jpeg",0.82));
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ---------- derived ---------- */
+const FEE_POOL = {on:true, pool:25, days:30};
+const budgetOf = c => c.jobs.reduce((a,j)=>a+j.price,0);
+const feeValueOf = c => c.jobs.reduce((a,j)=>a+j.price*(j.payout==="fees"?1:j.payout==="split"?.5:0),0);
+const prom = h => S.promoters.find(p=>p.handle===h);
+function money(c){
+  let released=0, converted=0, completed=0, impr=0, clicks=0;
+  c.jobs.forEach(j=>{
+    if(j.status==="paid"){
+      completed+=j.price;
+      const solPart = j.payout==="sol"?1: j.payout==="split"?.5:0;
+      released+=j.price*solPart; converted+=j.price*(1-solPart);
+      impr+=j.impr||0; clicks+=j.clicks||0;
+    }
+  });
+  const budget=budgetOf(c), escrow=budget*(1+COMMISSION);
+  return {budget, escrow, released, converted, completed, commission:completed*COMMISSION, remaining:escrow-completed*(1+COMMISSION), impr, clicks};
+}
+const payoutLabel = p => p==="sol"?"SOL upfront": p==="split"?"50/50 split":"Fee-share";
+const payoutPill = p => `<span class="pill ${p==="sol"?"sol":"fee"}">${payoutLabel(p)}</span>`;
+
+/* ---------- ui helpers ---------- */
+function toast(msg){
+  const r=document.getElementById("toastRoot"); r.innerHTML=`<div class="toast" role="status">${esc(msg)}</div>`;
+  clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",2600);
+}
+function openModal(html, onMount){
+  const root=document.getElementById("modalRoot");
+  root.innerHTML=`<div class="scrim"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  const scrim=root.firstElementChild;
+  scrim.addEventListener("click",e=>{ if(e.target===scrim || e.target.closest("[data-close]")) closeModal(); });
+  document.body.style.overflow="hidden";
+  onMount && onMount(scrim.firstElementChild);
+  const f=scrim.querySelector("[data-close]"); f && f.focus();
+}
+let payStop=null;
+function closeModal(){ if(payStop){ payStop(); payStop=null; } document.getElementById("modalRoot").innerHTML=""; document.body.style.overflow=""; }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+
+/* ---------- tape ---------- */
+function renderTape(){
+  const items=[];
+  S.campaigns.forEach(c=>c.jobs.filter(j=>j.status==="paid").forEach(j=>items.push(`<span>@${esc(j.handle)} completed ${esc(TYPES[j.type])} for <b>$${esc(c.ticker)}</b> · ${j.payout==="sol"?fmt(j.price)+" SOL":`<i>${j.payout==="fees"?"fee-share":"split"}</i> ${fmt(j.price)} SOL value`}</span>`)));
+  const html=items.join("");
+  document.getElementById("tape").innerHTML=html+html;
+  document.querySelector(".tape").hidden=!items.length;
+}
+
+/* ---------- market ---------- */
+let sort="new";
+function renderHero(){
+  const esc_=S.campaigns.reduce((a,c)=>a+money(c).remaining,0);
+  document.getElementById("heroStats").innerHTML=`
+    <div><dt>In escrow</dt><dd class="num">${fmt(esc_,1)} <small>SOL</small></dd></div>
+    <div><dt>Live</dt><dd class="num">${S.campaigns.length} <small>campaigns</small></dd></div>
+    <div><dt>Promoters</dt><dd class="num">${S.promoters.length}</dd></div>`;
+}
+function ticketHTML(c){
+  const b=budgetOf(c), paid=c.jobs.filter(j=>j.status==="paid").length;
+  return `<article class="ticket" tabindex="0" data-open="${c.id}" aria-label="${esc(c.name)} campaign">
+    ${c.banner?`<div class="tk-banner"><img src="${c.banner}" alt=""></div>`:""}
+    <div class="tk-body">
+      <div class="tk-head"><span class="ticker">$${esc(c.ticker)}</span>${c.fee.on?`<span class="pill fee">Fee-share ${c.fee.pool}% · ${c.fee.days}d</span>`:`<span class="pill sol">SOL only</span>`}</div>
+      <div class="coin-row">${logoHTML(c)}<h3>${esc(c.name)}${c.owner==="you"?' <span class="pill muted" style="vertical-align:middle">Yours</span>':""}</h3></div>
+      <div class="mint mono">Mint ${esc(shortMint(c.mint))}</div>
+      ${linksHTML(c)}
+    </div>
+    <div class="perf" aria-hidden="true"></div>
+    <dl class="tk-foot">
+      <div><dt>Committed</dt><dd class="num">${fmt(b,1)} SOL</dd></div>
+      <div><dt>Applicants</dt><dd class="num">${c.apps.length}</dd></div>
+      <div><dt>Completed</dt><dd class="num">${paid}</dd></div>
+    </dl>
+  </article>`;
+}
+function renderMarket(){
+  renderHero();
+  let list=[...S.campaigns];
+  if(sort==="new") list.sort((a,b)=>b.created-a.created);
+  if(sort==="budget") list.sort((a,b)=>budgetOf(b)-budgetOf(a));
+  document.getElementById("campaignGrid").innerHTML = list.map(ticketHTML).join("") || (S.campaigns.length?`<p class="empty">No campaigns match this filter.</p>`:`<p class="empty">No campaigns yet. <a href="#launch">Launch the first one</a>.</p>`);
+}
+document.getElementById("sortSel").onchange=e=>{sort=e.target.value;renderMarket();};
+document.getElementById("campaignGrid").addEventListener("click",e=>{ if(e.target.closest("a")) return; const t=e.target.closest("[data-open]"); t&&openCampaign(t.dataset.open);});
+document.getElementById("campaignGrid").addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.target.closest("a")){const t=e.target.closest("[data-open]"); t&&openCampaign(t.dataset.open);} });
+
+/* ---------- fee estimator ---------- */
+function estimate(c, swappedSol, vol, feeRate, solPrice){
+  const others = feeValueOf(c);
+  const stake = swappedSol>0 ? swappedSol/(others+swappedSol) : 0;   // share of the pool, if nobody else joins after you
+  const usd = vol * (feeRate/100) * (c.fee.pool/100) * stake * c.fee.days;
+  return {stake, usd, sol: usd/solPrice};
+}
+
+function openCampaign(id){
+  const c=S.campaigns.find(x=>x.id===id); if(!c) return;
+  const m=money(c);
+  const opts=Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
+  openModal(`
+    ${c.banner?`<div class="m-banner"><img src="${c.banner}" alt=""></div>`:""}
+    <div class="modal-head">
+      <div style="display:grid;gap:6px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="ticker">$${esc(c.ticker)}</span>${c.fee.on?`<span class="pill fee">Fee-share available</span>`:`<span class="pill sol">SOL only</span>`}</div>
+        <div class="coin-row">${logoHTML(c,"lg")}<h2>${esc(c.name)}</h2></div>
+        <span class="mint mono" style="word-break:break-all">${esc(c.mint)}</span>
+        ${linksHTML(c)}
+      </div>
+      <button class="btn small x" type="button" data-close>Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="two">
+        <div class="box">
+          <h3>Terms</h3>
+          <dl class="kv">
+            <dt>Committed in escrow</dt><dd class="num">${fmt(m.budget,2)} SOL</dd>
+            <dt>Promotions completed</dt><dd class="num">${c.jobs.filter(j=>j.status==="paid").length}</dd>
+            <dt>Fee-share stakes</dt><dd class="num">${fmt(feeValueOf(c),2)} SOL value</dd>
+            <dt>Fee pool</dt><dd>${c.fee.pool}% of creator fees</dd><dt>Pool duration</dt><dd>${c.fee.days} days</dd>
+            ${c.listing?`<dt>Listing fee</dt><dd>${c.listing.sol} SOL paid</dd>`:""}
+            <dt>Disclosure</dt><dd>#ad required</dd>
+          </dl>
+        </div>
+        ${c.fee.on?`<div class="box" id="estBox">
+          <h3>Fee-share estimator</h3>
+          <div class="row3">
+            <label class="f">Daily volume (USD)<input type="number" id="e-vol" value="${c.vol24||50000}" min="0" step="10000"></label>
+            <label class="f">Creator fee rate %<input type="number" id="e-rate" value="0.05" min="0" step="0.01"></label>
+            <label class="f">SOL price (USD)<input type="number" id="e-sol" value="150" min="1"></label>
+            <label class="f">Value you swap (SOL)<input type="number" id="e-swap" value="1" min="0" step="0.5"></label>
+          </div>
+          <div class="estimate num" id="e-out"></div>
+          <p class="note">Pool share assumes nobody else takes fee-share after you; more stakes dilute it. Assumes volume holds flat for the whole pool period. Volume usually decays, so treat this as a ceiling. Rates vary by launchpad; edit to match yours.</p>
+        </div>`:`<div class="box"><h3>SOL only</h3><p class="note" style="font-size:14px">This creator pays every deliverable in SOL from escrow. Payment releases as soon as the creator verifies your post link.</p></div>`}
+      </div>
+
+      <form class="box" id="applyForm" novalidate style="background:var(--surface)">
+        <h3>Apply to promote</h3>
+        <div class="row3">
+          <label class="f">Your X handle<input type="text" id="ap-handle" placeholder="@yourhandle" autocomplete="off"></label>
+          <label class="f">Followers<input type="number" id="ap-f" placeholder="10000" min="0"></label>
+          <label class="f">Deliverable<select id="ap-type">${opts}</select></label>
+          <label class="f">How many<input type="number" id="ap-qty" value="1" min="1"></label>
+          <label class="f">Your price per item (SOL)<input type="number" id="ap-price" value="1" min="0.1" step="0.1"></label>
+        </div>
+        <div class="radio-cards" role="radiogroup" aria-label="Payout">
+          <label><input type="radio" name="ap-pay" value="sol" checked><b>SOL upfront</b><span class="note">Full price from escrow on verification</span></label>
+          <label ${c.fee.on?"":'style="opacity:.45"'}><input type="radio" name="ap-pay" value="split" ${c.fee.on?"":"disabled"}><b>50/50 split</b><span class="note">Half SOL, half into the fee pool</span></label>
+          <label ${c.fee.on?"":'style="opacity:.45"'}><input type="radio" name="ap-pay" value="fees" ${c.fee.on?"":"disabled"}><b>All fee-share</b><span class="note">Full value becomes a fee stake</span></label>
+        </div>
+        <label class="f">Pitch<textarea id="ap-pitch" placeholder="What you'll post and why your audience fits this coin."></textarea></label>
+        <p class="err" id="ap-err" hidden></p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn primary" type="submit">Send application</button><span class="note" id="ap-total"></span></div>
+      </form>
+
+      ${c.jobs.length?`<div style="display:grid;gap:10px"><h3 style="font-size:16px">Completed and active promotions</h3><div class="tscroll"><table><thead><tr><th>Promoter</th><th>Deliverable</th><th>Payout</th><th>Status</th><th class="r">Impressions</th></tr></thead><tbody>
+      ${c.jobs.map(j=>`<tr><td><button class="linkish" type="button" data-prof="${esc(j.handle)}">@${esc(j.handle)}</button></td><td>${esc(TYPES[j.type])}</td><td>${payoutPill(j.payout)}</td><td>${statusPill(j.status)}</td><td class="r num">${j.impr?kfmt(j.impr):"–"}</td></tr>`).join("")}
+      </tbody></table></div></div>`:""}
+    </div>`, root=>{
+      const upd=()=>{
+        const q=Math.max(1,+root.querySelector("#ap-qty").value||1), t=root.querySelector("#ap-type").value, p=root.querySelector("[name=ap-pay]:checked").value;
+        const pr=Math.max(0,+root.querySelector("#ap-price").value||0), v=q*pr;
+        root.querySelector("#ap-total").textContent=`Package value ${fmt(v)} SOL · ${p==="sol"?fmt(v)+" SOL on verification":p==="split"?fmt(v/2)+" SOL + "+fmt(v/2)+" SOL of fee stake":fmt(v)+" SOL of fee stake"}`;
+        if(c.fee.on){
+          const sw=p==="sol"?0:p==="split"?v/2:v;
+          if(document.activeElement!==root.querySelector("#e-swap") && sw>0) root.querySelector("#e-swap").value=fmt(sw,2);
+          est();
+        }
+      };
+      const est=()=>{
+        if(!c.fee.on) return;
+        const r=estimate(c,+root.querySelector("#e-swap").value||0,+root.querySelector("#e-vol").value||0,+root.querySelector("#e-rate").value||0,+root.querySelector("#e-sol").value||1);
+        const sw=+root.querySelector("#e-swap").value||0;
+        const mult=sw? r.sol/sw : 0;
+        root.querySelector("#e-out").innerHTML=`≈ ${fmt(r.sol,2)} SOL <small>over ${c.fee.days} days · ${fmt(r.stake*100,1)}% of the pool · ${mult?fmt(mult,2)+"× the SOL you swap":"enter an amount"}</small>`;
+      };
+      root.querySelectorAll("#estBox input").forEach(i=>i.addEventListener("input",est));
+      root.querySelectorAll("#applyForm input,#applyForm select").forEach(i=>i.addEventListener("input",upd));
+      upd();
+      root.addEventListener("click",e=>{const b=e.target.closest("[data-prof]"); if(b){ openProfile(b.dataset.prof); }});
+      root.querySelector("#applyForm").addEventListener("submit",e=>{
+        e.preventDefault();
+        const err=root.querySelector("#ap-err");
+        const handle=root.querySelector("#ap-handle").value.trim().replace(/^@/,"");
+        const f=+root.querySelector("#ap-f").value||0;
+        const pitch=root.querySelector("#ap-pitch").value.trim();
+        const show=m=>{err.textContent=m;err.hidden=false;};
+        if(!/^[A-Za-z0-9_]{1,15}$/.test(handle)) return show("Enter your X handle: letters, numbers and underscores, up to 15 characters.");
+        if(!(+root.querySelector("#ap-price").value>0)) return show("Set your price per item in SOL.");
+        if(pitch.length<20) return show("Add a pitch of at least 20 characters so the creator knows what you'll post.");
+        c.apps.push({id:uid(),handle,type:root.querySelector("#ap-type").value,qty:Math.max(1,+root.querySelector("#ap-qty").value||1),price:+root.querySelector("#ap-price").value,payout:root.querySelector("[name=ap-pay]:checked").value,pitch,status:"pending",followers:f});
+        if(!prom(handle)) S.promoters.push({handle,name:handle,followers:f,niche:"New on SHILLPAID",completed:0,ontime:100,avgImpr:0,pref:root.querySelector("[name=ap-pay]:checked").value,history:[]});
+        save(); closeModal(); renderAll(); toast(`Application sent to $${c.ticker}`);
+      });
+    });
+}
+const statusPill = s => s==="paid"?`<span class="pill good">Paid</span>`: s==="submitted"?`<span class="pill warn">Needs review</span>`: s==="declined"?`<span class="pill muted">Declined</span>`: s==="pending"?`<span class="pill warn">Pending</span>`:`<span class="pill muted">Awaiting post</span>`;
+
+/* ---------- promoters ---------- */
+function promStats(p){
+  const live=[]; S.campaigns.forEach(c=>c.jobs.forEach(j=>{ if(j.handle===p.handle) live.push({c,j}); }));
+  return live;
+}
+function renderPromoters(){
+  const s=document.getElementById("promSort").value;
+  const list=[...S.promoters].sort((a,b)=> s==="followers"? b.followers-a.followers : b.completed-a.completed);
+  document.getElementById("promGrid").innerHTML=(list.length?"":`<p class="empty">No promoters yet. Promoters appear here after they apply to a campaign.</p>`)+list.map(p=>`
+    <button class="pcard" type="button" data-prof="${esc(p.handle)}">
+      <div class="who"><span class="av" style="background:${avColor(p.handle)}">${esc(p.name[0].toUpperCase())}</span><div><b>${esc(p.name)}</b><span>@${esc(p.handle)} · ${kfmt(p.followers)} followers</span></div></div>
+      <p class="note" style="font-size:13.5px;color:var(--ink-2)">${esc(p.niche)}</p>
+      <dl class="stats4">
+        <div><dt>Completed</dt><dd class="num">${p.completed}</dd></div>
+        <div><dt>Avg reach</dt><dd class="num">${p.avgImpr?kfmt(p.avgImpr):"–"}</dd></div>
+        <div><dt>Fee-share</dt><dd class="num">${p.history.filter(h=>h[2]!=="sol").length}</dd></div>
+      </dl>
+      <div>Prefers ${payoutPill(p.pref)}</div>
+    </button>`).join("");
+}
+document.getElementById("promSort").onchange=renderPromoters;
+document.getElementById("promGrid").addEventListener("click",e=>{const b=e.target.closest("[data-prof]"); b&&openProfile(b.dataset.prof);});
+
+function openProfile(handle){
+  const p=prom(handle); if(!p) return;
+  const live=promStats(p).filter(x=>x.j.status!=="paid");
+  const apps=[]; S.campaigns.forEach(c=>c.apps.forEach(a=>{ if(a.handle===handle && a.status==="pending") apps.push({c,a}); }));
+  const feeCount=p.history.filter(h=>h[2]!=="sol").length;
+  openModal(`
+    <div class="modal-head">
+      <div class="who"><span class="av" style="background:${avColor(p.handle)};width:56px;height:56px;font-size:22px">${esc(p.name[0].toUpperCase())}</span><div><h2>${esc(p.name)}</h2><span class="note" style="font-size:14px">@${esc(p.handle)} · ${fmt(p.followers,0)} followers · ${esc(p.niche)}</span></div></div>
+      <button class="btn small x" type="button" data-close>Close</button>
+    </div>
+    <div class="modal-body">
+      <dl class="stats4" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+        <div><dt>Completed</dt><dd class="num">${p.completed}</dd></div>
+        <div><dt>Followers</dt><dd class="num">${kfmt(p.followers)}</dd></div>
+        <div><dt>Avg impressions</dt><dd class="num">${p.avgImpr?kfmt(p.avgImpr):"–"}</dd></div>
+        <div><dt>Took fee-share</dt><dd class="num">${feeCount} of ${p.history.length}</dd></div>
+      </dl>
+      <div style="display:grid;gap:10px">
+        <h3 style="font-size:16px">Previous campaigns</h3>
+        ${p.history.length?`<div class="tscroll"><table><thead><tr><th>Coin</th><th>Deliverable</th><th>Payout</th><th class="r">Impressions</th><th>Date</th><th>Outcome</th></tr></thead><tbody>
+        ${p.history.map(h=>`<tr><td><span class="ticker">$${esc(h[0])}</span></td><td>${esc(h[1])}</td><td>${payoutPill(h[2])}</td><td class="r num">${kfmt(h[3])}</td><td class="num">${dayStr(h[4])}</td><td>${h[5]==="Late"?'<span class="pill warn">Late</span>':'<span class="pill good">Completed</span>'}</td></tr>`).join("")}
+        </tbody></table></div>`:`<p class="empty">No completed campaigns yet.</p>`}
+      </div>
+      ${(live.length||apps.length)?`<div style="display:grid;gap:10px"><h3 style="font-size:16px">Active now</h3><div class="tscroll"><table><tbody>
+        ${live.map(({c,j})=>`<tr><td><span class="ticker">$${esc(c.ticker)}</span></td><td>${esc(TYPES[j.type])}</td><td>${payoutPill(j.payout)}</td><td>${statusPill(j.status)}</td></tr>`).join("")}
+        ${apps.map(({c,a})=>`<tr><td><span class="ticker">$${esc(c.ticker)}</span></td><td>${a.qty} × ${esc(TYPES[a.type])}</td><td>${payoutPill(a.payout)}</td><td><span class="pill muted">Applied</span></td></tr>`).join("")}
+      </tbody></table></div></div>`:""}
+    </div>`);
+}
+
+/* ---------- launch ---------- */
+const launchImgs={banner:"",logo:""};
+function resetLaunchImgs(){ launchImgs.banner=""; launchImgs.logo=""; document.getElementById("pv-banner").textContent="No banner"; document.getElementById("pv-logo").textContent="Logo"; }
+[["banner",1200,400],["logo",256,256]].forEach(([k,w,h])=>{
+  document.getElementById("lf-"+k).addEventListener("change",async e=>{
+    const f=e.target.files[0], pv=document.getElementById("pv-"+k), err=document.getElementById("launchErr");
+    if(!f){ launchImgs[k]=""; pv.textContent=k==="banner"?"No banner":"Logo"; return; }
+    try{
+      launchImgs[k]=await readImage(f,w,h,true);
+      pv.innerHTML=""; const im=document.createElement("img"); im.src=launchImgs[k]; im.alt=""; pv.appendChild(im); err.hidden=true;
+    }catch(_){
+      launchImgs[k]=""; e.target.value=""; pv.textContent=k==="banner"?"No banner":"Logo";
+      err.textContent="That file couldn't be read as an image. Use a PNG, JPG, GIF or WebP."; err.hidden=false;
+    }
+  });
+});
+document.getElementById("launchForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const err=document.getElementById("launchErr"), show=m=>{err.textContent=m;err.hidden=false;};
+  err.hidden=true;
+  const name=document.getElementById("lf-name").value.trim(), ticker=document.getElementById("lf-ticker").value.trim().replace(/^\$/,"").toUpperCase(), mint=document.getElementById("lf-mint").value.trim();
+  if(!name) return show("Give the coin a name.");
+  if(!/^[A-Z0-9]{2,10}$/.test(ticker)) return show("Ticker should be 2–10 letters or numbers.");
+  if(!B58.test(mint)) return show("That mint address isn't valid base58. Copy it from your launchpad or explorer.");
+  // Links are optional: a blank or unrecognised link is simply left off the campaign.
+  const xUrl=cleanUrl(document.getElementById("lf-x").value,["x.com","twitter.com"])||"";
+  const web=cleanUrl(document.getElementById("lf-web").value)||"";
+  if(S.campaigns.some(c=>c.mint===mint)) return show("A campaign for this mint address is already live.");
+  const draft={name,ticker,mint,banner:launchImgs.banner,logo:launchImgs.logo,xUrl,web};
+  openPayment(draft, paid=>{
+    const c={id:uid(),owner:"you",...draft,listing:{orderId:paid.orderId,sol:PAY.sol,at:Date.now()},fee:{...FEE_POOL},created:Date.now(),vol24:50000,apps:[],jobs:[],releases:[],feeStreamed:0};
+    S.campaigns.unshift(c); S.pendingPay=null;
+    if(!save()){ c.banner=""; c.logo=""; save(); toast("Payment received. Images were too large to store, so the campaign was saved without them."); }
+    else toast(`Payment received. $${ticker} is live on the market`);
+    closeModal(); renderAll();
+    setLaunch(false); document.getElementById("campaignGrid").scrollIntoView({behavior:"smooth",block:"start"});
+    document.getElementById("launchForm").reset(); resetLaunchImgs();
+  });
+});
+
+/* ---------- listing fee: hosted checkout (NOWPayments via Netlify Functions) ---------- */
+function qrSVG(text){
+  if(typeof qrcode!=="function") return "";
+  const q=qrcode(0,"M"); q.addData(text); q.make();
+  const n=q.getModuleCount(); let d="";
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) d+=`M${c},${r}h1v1h-1z`;
+  return `<svg viewBox="-3 -3 ${n+6} ${n+6}" shape-rendering="crispEdges" role="img" aria-label="QR code for the payment page"><rect x="-3" y="-3" width="${n+6}" height="${n+6}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+async function api(path, opts){
+  const r=await fetch(PAY.api+path, opts);
+  let j=null; try{ j=await r.json(); }catch(_){}
+  if(!r.ok || !j) throw Object.assign(new Error((j&&j.error)||("HTTP "+r.status)),{http:r.status, noServer:!j});
+  return j;
+}
+async function copyText(t, btn){
+  try{ await navigator.clipboard.writeText(t); btn.textContent="Copied"; setTimeout(()=>btn.textContent="Copy",1400); }
+  catch(_){ const code=btn.previousElementSibling; const r=document.createRange(); r.selectNodeContents(code); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+}
+function openPayment(draft, onPaid){
+  openModal(`
+    <div class="modal-head">
+      <div style="display:grid;gap:4px"><h2>Pay listing fee</h2><span class="note" style="font-size:14px">$${esc(draft.ticker)} goes live on the market as soon as your payment is confirmed.</span></div>
+      <button class="btn small x" type="button" data-close>Cancel</button>
+    </div>
+    <div class="modal-body" id="payBody">
+      <div class="status"><span class="spin" aria-hidden="true"></span><span>Creating your payment link…</span></div>
+    </div>`, async root=>{
+      const body=root.querySelector("#payBody");
+      let stopped=false, timer=null, fails=0;
+      payStop=()=>{ stopped=true; clearTimeout(timer); };
+      root.addEventListener("click",e=>{ const b=e.target.closest("[data-copy]"); if(b) copyText(b.dataset.copy,b); });
+
+      // Reuse this browser's open payment for up to 60 minutes, so a payment already sent is never lost.
+      let p=S.pendingPay;
+      if(!p || !p.orderId || Date.now()-p.created > 60*60000){
+        try{
+          const r=await api("/create-invoice",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ticker:draft.ticker,name:draft.name,mint:draft.mint})});
+          p=S.pendingPay={orderId:r.orderId, invoiceUrl:r.invoiceUrl, created:Date.now()}; save();
+        }catch(err){
+          if(stopped) return;
+          body.innerHTML=`<div class="status warn">${err instanceof TypeError || err.noServer
+            ? "Payments only work on the live site. This preview can't reach the payment server."
+            : "Couldn't create a payment link right now. Close this window and try again in a minute."}</div>`;
+          return;
+        }
+      }
+      if(stopped) return;
+      const qr=qrSVG(p.invoiceUrl);
+      body.innerHTML=`
+      <div class="pay">
+        <div class="qr">${qr||`<p class="note" style="color:#333;padding:20px;text-align:center">QR code unavailable. Use the Pay now button.</p>`}</div>
+        <div style="display:grid;gap:14px;min-width:0">
+          <div class="pay-amt num">${PAY.sol} SOL <small>one-time listing fee</small></div>
+          <p class="note" style="font-size:14px;color:var(--ink-2)">Press Pay now to open your secure checkout page, or scan the QR code with your phone camera. The link is unique to you.</p>
+          <div><a class="btn primary" href="${esc(p.invoiceUrl)}" target="_blank" rel="noopener noreferrer">Pay now</a></div>
+          <div class="status" id="payStatus" role="status"><span class="spin" aria-hidden="true"></span><span id="payMsg">Waiting for payment… keep this window open.</span></div>
+          <div style="display:grid;gap:6px">
+            <span class="note">Your payment link</span>
+            <div class="copyrow"><code>${esc(p.invoiceUrl)}</code><button class="btn small" type="button" data-copy="${esc(p.invoiceUrl)}">Copy</button></div>
+          </div>
+          <p class="note">Checkout is handled by NOWPayments. After you pay, it can take a minute or two for the network to confirm.</p>
+        </div>
+      </div>`;
+      const msg=body.querySelector("#payMsg"), box=body.querySelector("#payStatus");
+      const setBox=(cls,t)=>{ box.className="status"+(cls?" "+cls:""); msg.textContent=t; };
+      const poll=async()=>{
+        if(stopped) return;
+        try{
+          const st=await api("/order-status?id="+encodeURIComponent(p.orderId));
+          if(stopped) return;
+          fails=0;
+          if(st.paid){ stopped=true; setBox("ok","Payment received. Publishing…"); setTimeout(()=>onPaid({orderId:p.orderId}),900); return; }
+          if(st.status==="partially_paid") setBox("warn","We received less than the full amount. Send the rest from the checkout page.");
+          else if(st.status==="confirming") setBox("","Payment seen on the network. Waiting for confirmation…");
+          else if(st.status==="failed"||st.status==="expired"){ S.pendingPay=null; save(); setBox("warn","This payment expired or failed. Close this window and press Publish campaign again for a new link."); stopped=true; return; }
+          else setBox("","Waiting for payment… keep this window open.");
+        }catch(err){ fails++; setBox("warn","Having trouble checking your payment. Still trying…"); }
+        timer=setTimeout(poll, Math.min(20000, PAY.pollMs+fails*3000));
+      };
+      poll();
+    });
+}
+
+/* ---------- dashboard ---------- */
+let dashId=null;
+function mine(){ return S.campaigns.filter(c=>c.owner==="you"); }
+function renderDashboard(){
+  const sel=document.getElementById("dashSel"), ms=mine();
+  if(!ms.find(c=>c.id===dashId)) dashId=ms[0]?.id;
+  sel.innerHTML=ms.map(c=>`<option value="${c.id}" ${c.id===dashId?"selected":""}>$${esc(c.ticker)} · ${esc(c.name)}</option>`).join("");
+  const body=document.getElementById("dashBody");
+  const c=ms.find(x=>x.id===dashId);
+  if(!c){ body.innerHTML=`<p class="empty">You have no campaigns yet. <a href="#launch">Launch one</a>.</p>`; return; }
+  const m=money(c);
+  const cpm=m.impr? m.completed/(m.impr/1000) : 0;
+  const pending=c.apps.filter(a=>a.status==="pending");
+  const feeHolders={}; c.jobs.filter(j=>j.status==="paid"&&j.payout!=="sol").forEach(j=>{ feeHolders[j.handle]=(feeHolders[j.handle]||0)+j.price*(j.payout==="fees"?1:.5); });
+  const b=budgetOf(c), feeTotal=Object.values(feeHolders).reduce((a,v)=>a+v,0)||1;
+  body.innerHTML=`
+    <dl class="kpis">
+      <div class="kpi"><dt>Escrow funded</dt><dd class="num">${fmt(m.escrow)}<small>SOL incl. 5% commission</small></dd></div>
+      <div class="kpi"><dt>Released</dt><dd class="num">${fmt(m.released)}<small>SOL paid to promoters</small></dd></div>
+      <div class="kpi fee"><dt>Swapped to fee-share</dt><dd class="num">${fmt(m.converted)}<small>SOL kept in your wallet</small></dd></div>
+      <div class="kpi"><dt>Left in escrow</dt><dd class="num">${fmt(m.remaining)}<small>SOL, refundable if unfilled</small></dd></div>
+      <div class="kpi"><dt>Cost per 1k views</dt><dd class="num">${m.impr?fmt(cpm,3):"–"}<small>SOL · ${kfmt(m.impr)} impressions</small></dd></div>
+    </dl>
+    <div class="dash-grid">
+      <div class="panel">
+        <div class="sechead"><h2>Completed value, cumulative</h2><p>SOL released plus value swapped to fee-share, last 14 days</p></div>
+        <div class="chart-wrap" id="chart"></div>
+      </div>
+      <div class="panel">
+        <div class="sechead"><h2>Fee-share stakes</h2><p>${c.fee.on?`${c.fee.pool}% of creator fees · ${c.fee.days} days`:"Not offered on this campaign"}</p></div>
+        ${c.fee.on?`${Object.keys(feeHolders).length?`<div class="tscroll"><table><thead><tr><th>Promoter</th><th class="r">Swapped</th><th class="r">Pool share</th></tr></thead><tbody>
+          ${Object.entries(feeHolders).map(([h,v])=>`<tr><td><button class="linkish" type="button" data-prof="${esc(h)}">@${esc(h)}</button></td><td class="r num">${fmt(v)} SOL</td><td class="r num">${fmt(v/feeTotal*100,1)}%</td></tr>`).join("")}
+          </tbody></table></div>`:`<p class="empty">No fee-share stakes yet.</p>`}
+          <dl class="kv"><dt>Stake holders</dt><dd class="num">${Object.keys(feeHolders).length}</dd><dt>Streamed to promoters so far</dt><dd class="num">${fmt(c.feeStreamed)} SOL</dd></dl>
+          <p class="note">The pool is split between stake holders in proportion to the value they swapped, paid from your creator fees until the period ends.</p>`
+          :`<p class="note" style="font-size:14px">Every deliverable here is paid in SOL. Turn on fee-share for your next campaign to keep more SOL in your wallet.</p>`}
+      </div>
+    </div>
+    <div style="display:grid;gap:10px">
+      <div class="sechead"><h2>Applications</h2><p>${pending.length} waiting for a decision</p></div>
+      <div class="tscroll">${pending.length?`<table><thead><tr><th>Promoter</th><th>Package</th><th>Payout</th><th>Pitch</th><th class="r">Followers</th><th></th></tr></thead><tbody>
+        ${pending.map(a=>{const p=prom(a.handle)||{followers:a.followers||0};return `<tr><td><button class="linkish" type="button" data-prof="${esc(a.handle)}">@${esc(a.handle)}</button></td><td>${a.qty} × ${esc(TYPES[a.type])}<br><span class="note num">${fmt(a.qty*(a.price||0))} SOL · ${fmt(a.price||0)} each</span></td><td>${payoutPill(a.payout)}</td><td style="min-width:220px;color:var(--ink-2)">${esc(a.pitch)}</td><td class="r num">${kfmt(p.followers)}</td><td><div class="actions"><button class="btn small primary" type="button" data-accept="${a.id}">Accept</button><button class="btn small" type="button" data-decline="${a.id}">Decline</button></div></td></tr>`;}).join("")}
+      </tbody></table>`:`<p class="empty">No open applications.</p>`}</div>
+    </div>
+    <div style="display:grid;gap:10px">
+      <div class="sechead"><h2>Deliverables</h2><p>Check the post link and the #ad label before releasing payment</p></div>
+      <div class="tscroll">${c.jobs.length?`<table><thead><tr><th>Promoter</th><th>Deliverable</th><th class="r">Price</th><th>Payout</th><th>Status</th><th>Post</th><th class="r">Impressions</th><th class="r">Clicks</th><th></th></tr></thead><tbody>
+        ${c.jobs.map(j=>`<tr><td><button class="linkish" type="button" data-prof="${esc(j.handle)}">@${esc(j.handle)}</button></td><td>${esc(TYPES[j.type])}</td><td class="r num">${fmt(j.price)}</td><td>${payoutPill(j.payout)}</td><td>${statusPill(j.status)}</td>
+          <td>${j.url?`<a href="${esc(j.url)}" target="_blank" rel="noopener" class="mono">view</a>`:'<span class="note">–</span>'}</td>
+          <td class="r num">${j.impr?kfmt(j.impr):"–"}</td><td class="r num">${j.clicks?kfmt(j.clicks):"–"}</td>
+          <td>${j.status==="submitted"?`<div class="actions"><button class="btn small primary" type="button" data-release="${j.id}">Verify and release</button><button class="btn small" type="button" data-reject="${j.id}">Reject</button></div>`: j.status==="assigned"?`<button class="btn small ghost" type="button" data-sim="${j.id}">Simulate post</button>`:""}</td></tr>`).join("")}
+      </tbody></table>`:`<p class="empty">Accept an application to create deliverables.</p>`}</div>
+    </div>`;
+  drawChart(c);
+}
+document.getElementById("dashSel").onchange=e=>{dashId=e.target.value;renderDashboard();};
+document.getElementById("dashBody").addEventListener("click",e=>{
+  const c=S.campaigns.find(x=>x.id===dashId); if(!c) return;
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.prof) return openProfile(t.dataset.prof);
+  if(t.dataset.accept){
+    const a=c.apps.find(x=>x.id===t.dataset.accept);
+    const n=a.qty;
+    for(let i=0;i<n;i++) c.jobs.push({id:uid(),handle:a.handle,type:a.type,price:a.price||0,payout:a.payout,status:"assigned",url:"",impr:0,clicks:0});
+    a.status="accepted"; save(); renderAll(); toast(`Accepted @${a.handle}. ${fmt(n*(a.price||0)*(1+COMMISSION))} SOL added to escrow.`);
+  }
+  if(t.dataset.decline){ const a=c.apps.find(x=>x.id===t.dataset.decline); a.status="declined"; save(); renderAll(); toast(`Declined @${a.handle}`); }
+  if(t.dataset.sim){ const j=c.jobs.find(x=>x.id===t.dataset.sim); j.status="submitted"; j.url=`https://x.com/${j.handle}`; j.impr=Math.round(8000+Math.random()*60000); j.clicks=Math.round(j.impr*(.015+Math.random()*.02)); save(); renderAll(); toast(`@${j.handle} submitted a post link`); }
+  if(t.dataset.release){
+    const j=c.jobs.find(x=>x.id===t.dataset.release); j.status="paid";
+    const pr=prom(j.handle); if(pr){ pr.history.unshift([c.ticker,TYPES[j.type],j.payout,j.impr||0,Date.now(),"Completed"]); pr.completed=pr.history.length; const im=pr.history.map(h=>h[3]).filter(Boolean); pr.avgImpr=im.length?Math.round(im.reduce((a,b)=>a+b,0)/im.length):0; }
+    const last=c.releases[c.releases.length-1];
+    if(last && Math.abs(last.t-today.getTime())<DAY/2) last.v+=j.price; else c.releases.push({t:today.getTime(),v:j.price});
+    save(); renderAll();
+    toast(j.payout==="sol"?`Released ${fmt(j.price)} SOL to @${j.handle}`: j.payout==="split"?`Released ${fmt(j.price/2)} SOL + fee stake to @${j.handle}`:`Fee stake of ${fmt(j.price)} SOL value assigned to @${j.handle}`);
+  }
+  if(t.dataset.reject){ const j=c.jobs.find(x=>x.id===t.dataset.reject); j.status="assigned"; j.url=""; j.impr=0; j.clicks=0; save(); renderAll(); toast(`Sent back to @${j.handle} to fix`); }
+});
+
+/* ---------- chart ---------- */
+function drawChart(c){
+  const el=document.getElementById("chart"); if(!el) return;
+  const W=Math.max(280, el.clientWidth||600), H=220, pad={l:44,r:14,t:14,b:28};
+  const days=[]; let cum=0;
+  for(let i=13;i>=0;i--){
+    const d=today.getTime()-i*DAY;
+    c.releases.forEach(r=>{ if(Math.abs(r.t-d)<DAY/2) cum+=r.v; });
+    days.push({t:d,v:cum});
+  }
+  const max=Math.max(1, budgetOf(c));
+  const nice=(()=>{const s=[1,2,5,10,20,25,50,100,200,500]; const step=s.find(x=>max/x<=5)||1000; return {step, top:Math.ceil(max/step)*step};})();
+  const x=i=>pad.l+i*(W-pad.l-pad.r)/(days.length-1);
+  const y=v=>pad.t+(H-pad.t-pad.b)*(1-v/nice.top);
+  let grid="";
+  for(let v=0; v<=nice.top+1e-9; v+=nice.step) grid+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${pad.l-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${fmt(v,0)}</text>`;
+  const bud=budgetOf(c);
+  grid+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y(bud)}" y2="${y(bud)}" stroke="var(--ink-2)" stroke-dasharray="4 4" stroke-width="1"/><text x="${W-pad.r}" y="${y(bud)-6}" text-anchor="end" font-size="11" fill="var(--ink-2)">Committed ${fmt(bud)} SOL</text>`;
+  let xl=""; [0,4,9,13].forEach(i=>xl+=`<text x="${x(i)}" y="${H-8}" text-anchor="${i===0?"start":i===13?"end":"middle"}" font-size="11" fill="var(--muted)">${dayStr(days[i].t)}</text>`);
+  const line=days.map((d,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(d.v).toFixed(1)}`).join("");
+  const area=line+`L${x(days.length-1)},${y(0)}L${x(0)},${y(0)}Z`;
+  const last=days[days.length-1];
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative completed value: ${fmt(last.v)} SOL of ${fmt(bud)} SOL budget">
+    ${grid}${xl}
+    <path d="${area}" fill="var(--accent)" fill-opacity=".12"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${x(days.length-1)}" cy="${y(last.v)}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+    <text x="${x(days.length-1)-8}" y="${y(last.v)-10}" text-anchor="end" font-size="12" font-weight="700" fill="var(--ink)">${fmt(last.v)} SOL</text>
+    <line id="xh" x1="0" x2="0" y1="${pad.t}" y2="${H-pad.b}" stroke="var(--ink-2)" stroke-width="1" visibility="hidden"/>
+    <circle id="xd" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
+    <rect x="${pad.l}" y="0" width="${W-pad.l-pad.r}" height="${H}" fill="transparent" id="hit"/>
+  </svg><div class="tip" id="tip" hidden></div>`;
+  const svg=el.querySelector("svg"), tip=el.querySelector("#tip"), xh=el.querySelector("#xh"), xd=el.querySelector("#xd");
+  const move=e=>{
+    const r=svg.getBoundingClientRect(); const px=(e.clientX-r.left)*W/r.width;
+    const i=Math.max(0,Math.min(days.length-1,Math.round((px-pad.l)/((W-pad.l-pad.r)/(days.length-1)))));
+    const d=days[i];
+    xh.setAttribute("x1",x(i)); xh.setAttribute("x2",x(i)); xh.setAttribute("visibility","visible");
+    xd.setAttribute("cx",x(i)); xd.setAttribute("cy",y(d.v)); xd.setAttribute("visibility","visible");
+    tip.hidden=false; tip.style.left=(x(i)*r.width/W)+"px"; tip.style.top=(y(d.v)*r.height/H)+"px";
+    tip.textContent=`${dayStr(d.t)} · ${fmt(d.v)} SOL completed`;
+  };
+  const out=()=>{tip.hidden=true;xh.setAttribute("visibility","hidden");xd.setAttribute("visibility","hidden");};
+  svg.addEventListener("pointermove",move); svg.addEventListener("pointerleave",out);
+}
+let rz; window.addEventListener("resize",()=>{clearTimeout(rz); rz=setTimeout(()=>{ if(route()==="dashboard"){ const c=S.campaigns.find(x=>x.id===dashId); c&&drawChart(c);} },150);});
+
+/* ---------- launch toggle ---------- */
+function setLaunch(open){
+  const w=document.getElementById("launchWrap"), b=document.getElementById("openLaunch");
+  w.hidden=!open; b.hidden=open;
+  if(open){ w.scrollIntoView({behavior:"smooth",block:"start"}); document.getElementById("lf-name").focus({preventScroll:true}); }
+}
+document.getElementById("openLaunch").onclick=()=>setLaunch(true);
+document.getElementById("closeLaunch").onclick=()=>setLaunch(false);
+
+/* ---------- routing ---------- */
+const VIEWS=["market","promoters","dashboard"];
+const route=()=>{ const h=location.hash.slice(1); return VIEWS.includes(h)?h:"market"; };
+function show(){
+  const r=route();
+  document.querySelectorAll("section[data-view]").forEach(s=>s.hidden=s.dataset.view!==r);
+  document.querySelectorAll("nav.tabs a").forEach(a=>{ if(a.dataset.tab===r) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  if(r==="dashboard") renderDashboard();
+  if(location.hash==="#launch"){ history.replaceState(null,"","#market"); setLaunch(true); return; }
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",show);
+
+function renderAll(){ renderTape(); renderMarket(); renderPromoters(); if(route()==="dashboard") renderDashboard(); }
+document.getElementById("resetBtn").onclick=()=>{ S=seed(); save(); dashId=null; renderAll(); show(); toast("All data cleared"); };
+
+renderAll(); show();
+})();
+</script>
+</body></html>
